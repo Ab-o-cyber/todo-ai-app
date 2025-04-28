@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Todo App</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f8ff;
+        }
+
+        h1 {
+            color: #2b6cb0;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col min-h-screen justify-between">
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold mb-4">My Todo List with Reminders</h1>
+        <form id="todoForm" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <div class="mb-4">
+                <label class="block text-green-700 text-sm font-bold mb-2" for="taskName">
+                    Task Name
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" id="taskName" placeholder="Enter task name">
+            </div>
+            <div class="mb-4">
+                <label class="block text-green-700 text-sm font-bold mb-2" for="dueDateTime">
+                    Due Date and Time
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="datetime-local" id="dueDateTime">
+            </div>
+            <div class="mb-4">
+                <label class="block text-green-700 text-sm font-bold mb-2" for="reminderDate">
+                    Reminder Date
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="date" id="reminderDate">
+            </div>
+            <div class="mb-4">
+                <label class="block text-green-700 text-sm font-bold mb-2" for="reminderTime">
+                    Reminder Time
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="time" id="reminderTime">
+            </div>
+            <div class="mb-4">
+                <label class="block text-green-700 text-sm font-bold mb-2" for="reminderNotification">
+                    Reminder Notification
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" id="reminderNotification" placeholder="Enter reminder message">
+            </div>
+            <div class="mb-4">
+                <label class="block text-green-700 text-sm font-bold mb-2" for="setGoal">
+                    Set Goal
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" id="setGoal" placeholder="Enter your goal for this task">
+            </div>
+            <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button" id="submitBtn">
+                Let's Add This Task! 🚀
+            </button>
+        </form>
+
+        <div id="taskList" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 text-green-800">
+            <h2 class="text-xl mb-4">Task List</h2>
+            <ul id="tasks"></ul>
+        </div>
+    </div>
+
+    <footer class="bg-blue-100 p-4 text-center">
+        <a href="#" class="text-green-700">Made with ❤️ by AM</a>
+    </footer>
+
+    <script>
+        document.getElementById('submitBtn').addEventListener('click', function () {
+            const taskName = document.getElementById('taskName').value;
+            const dueDateTime = document.getElementById('dueDateTime').value;
+            const reminderDate = document.getElementById('reminderDate').value;
+            const reminderTime = document.getElementById('reminderTime').value;
+            const reminderNotification = document.getElementById('reminderNotification').value;
+            const setGoal = document.getElementById('setGoal').value;
+
+            if (!taskName || !dueDateTime || !reminderDate || !reminderTime || !reminderNotification || !setGoal) {
+                alert('Please fill all the fields.');
+                return;
+            }
+
+            const task = {
+                taskName,
+                dueDateTime,
+                reminderDate,
+                reminderTime,
+                reminderNotification,
+                setGoal,
+                isCompleted: false
+            };
+
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks.push(task);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+
+            renderTasks();
+        });
+
+        function renderTasks() {
+            const taskList = document.getElementById('tasks');
+            taskList.innerHTML = '';
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+            tasks.forEach((task, index) => {
+                const listItem = document.createElement('li');
+                listItem.className = 'mb-2 flex justify-between items-center';
+
+                const taskInfo = document.createElement('div');
+                taskInfo.textContent = `${task.taskName} - Due: ${task.dueDateTime} - Goal: ${task.setGoal}`;
+                listItem.appendChild(taskInfo);
+
+                const button = document.createElement('button');
+                button.textContent = task.isCompleted ? 'Completed' : 'Mark as Completed';
+                button.className = `py-1 px-2 rounded ${task.isCompleted ? 'bg-gray-500' : 'bg-green-500'} text-white`;
+                button.disabled = task.isCompleted;
+                button.onclick = () => {
+                    task.isCompleted = true;
+                    localStorage.setItem('tasks', JSON.stringify(tasks));
+                    renderTasks();
+                };
+                listItem.appendChild(button);
+
+                taskList.appendChild(listItem);
+            });
+        }
+
+        function checkReminders() {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks.forEach(task => {
+                const now = new Date();
+                const reminderDateTime = new Date(`${task.reminderDate}T${task.reminderTime}`);
+                if (!task.isCompleted && now >= reminderDateTime) {
+                    alert(task.reminderNotification);
+                }
+            });
+        }
+
+        setInterval(checkReminders, 60000);
+        renderTasks();
+    </script>
+</body>
+
+</html>
